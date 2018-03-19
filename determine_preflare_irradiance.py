@@ -70,7 +70,7 @@ def determine_preflare_irradiance(light_curve_df, estimated_time_of_peak_start,
     if verbose:
         logger.info("Divided pre-flare period into 3 equal-length windows.")
 
-    # Compute median and σ in each window
+    # Compute median and standard deviation in each window
     medians = [windowed_df['irradiance_percent'].median() for windowed_df in windows]
     medians_abs = [windowed_df['irradiance'].median() for windowed_df in windows]
     stds = np.array([windowed_df['irradiance_percent'].std() for windowed_df in windows])
@@ -80,7 +80,7 @@ def determine_preflare_irradiance(light_curve_df, estimated_time_of_peak_start,
     # Compute max difference between the medians
     max_median_diff = np.max(np.abs(np.append(np.diff(medians), medians[2] - medians[0])))
 
-    # Compare medians and σs in each window to thresholds
+    # Compare medians and standard deviations in each window to thresholds
     failed_median_threshold = False
     failed_std_threshold = False
     if np.all(np.isnan(stds)):

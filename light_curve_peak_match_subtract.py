@@ -62,7 +62,7 @@ def light_curve_peak_match_subtract(light_curve_to_subtract_from_df, light_curve
     light_curve_to_subtract_from_df = light_curve_to_subtract_from_df.dropna()
     light_curve_to_subtract_with_df = light_curve_to_subtract_with_df.dropna()
 
-    # Detrend and find the peaks that are ≥ 95% of the max irradiance within
+    # Detrend and find the peaks that are >= 95% of the max irradiance within
     if verbose:
         logger.info("Detrending light curves.")
     if (light_curve_to_subtract_from_df['irradiance'].values < 0).all():
