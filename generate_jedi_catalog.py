@@ -135,6 +135,11 @@ def generate_jedi_catalog(threshold_time_prior_flare_minutes=240.0,
     eve_lines.index = pd.to_datetime(eve_readsav.iso.astype(str))
     eve_lines = eve_lines.drop_duplicates()
 
+    # slice out only columns needed by Shawn
+    # eve_selected_lines = eve_lines.drop(columns=['9.4', '13.1', '13.3', '25.6', '28.4', '30.4', '33.5', '36.1', '36.8', '44.6', '46.5', '49.9', '52.1', '52.6', '53.7', '55.4', '56.8', '58.4', '59.2', '60.0', '61.0', '62.5', '63.0', '71.9', '72.2', '77.0', '79.0', '83.6', '95.0', '97.3', '97.7', '102.6', '103.2'])
+    # eve_selected_lines.info()
+    # eve_selected_lines.to_csv('/Users/shawnpolson/Documents/School/Spring 2018/Data Mining/StealthCMEs/PyCharm/JEDI Catalog/eve_selected_lines_forreal.csv')
+
     # Get GOES flare events above C1 within date range corresponding to EVE data
     # flares = get_goes_flare_events(eve_lines.index[0], eve_lines.index[-1], verbose=verbose)  # TODO: The method in sunpy needs fixing, issue 2434
 
