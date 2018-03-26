@@ -29,11 +29,8 @@ __author__ = 'James Paul Mason (and Shawn Polson and Tyler Albee)'
 __contact__ = 'shpo9723@colorado.edu'
 
 
-def generate_cme_signature(threshold_time_prior_flare_minutes=240.0,
-                          dimming_window_relative_to_flare_minutes_left=0.0,
-                          dimming_window_relative_to_flare_minutes_right=240.0,
-                          threshold_minimum_dimming_window_minutes=120.0,
-                          flare_index_range=range(0, 5052),
+def generate_cme_signature(start_timestamp='2010-08-07 17:12:10',
+                          end_timestamp='2010-08-07 21:18:11',
                           output_path='/Users/shawnpolson/Documents/School/Spring 2018/Data Mining/StealthCMEs/PyCharm/JEDI Catalog/',
                           verbose=True):
     """Wrapper code for creating James's Extreme Ultraviolet Variability Experiment (EVE) Dimming Index (JEDI) catalog.
@@ -42,19 +39,8 @@ def generate_cme_signature(threshold_time_prior_flare_minutes=240.0,
         None.
 
     Optional Inputs:
-        threshold_time_prior_flare_minutes [float]:             How long before a particular event does the last one need to have
-                                                                occurred to be considered independent. If the previous one was too
-                                                                recent, will use that event's pre-flare irradiance.
-                                                                Default is 240 (4 hours).
-        dimming_window_relative_to_flare_minutes_left [float]:  Defines the left side of the time window to search for dimming
-                                                                relative to the GOES/XRS flare peak. Negative numbers mean
-                                                                minutes prior to the flare peak. Default is 0.0.
-        dimming_window_relative_to_flare_minutes_right [float]: Defines the right side of the time window to search for dimming
-                                                                relative to the GOES/XRS flare peak. If another flare
-                                                                occurs before this, that time will define the end of the
-                                                                window instead. Default is 240 (4 hours).
-        threshold_minimum_dimming_window_minutes [float]:       The smallest allowed time window in which to search for dimming.
-                                                                Default is 120.
+        start_timestamp [str]:                                  A timestamp for the beginning of an event.
+        end_timestamp [str]:                                    A timestamp for the end of an event.
         flare_index_range [range]                               The range of GOES flare indices to process. Default is range(0, 5052).
         output_path [str]:                                      Set to a path for saving the JEDI catalog table and processing
                                                                 summary plots. Default is '/Users/shawnpolson/Documents/School/Spring 2018/Data Mining/StealthCMEs/PyCharm/JEDI Catalog/'.
@@ -68,7 +54,7 @@ def generate_cme_signature(threshold_time_prior_flare_minutes=240.0,
         None
 
     Example:
-        generate_jedi_catalog(output_path='/Users/jmason86/Dropbox/Research/Postdoc_NASA/Analysis/Coronal Dimming Analysis/JEDI Catalog/',
+        generate_cme_signature(output_path='/Users/jmason86/Dropbox/Research/Postdoc_NASA/Analysis/Coronal Dimming Analysis/JEDI Catalog/',
                               verbose=True)
     """
     # Prepare the logger for verbose
@@ -80,8 +66,10 @@ def generate_cme_signature(threshold_time_prior_flare_minutes=240.0,
 
     # Get EVE level 2 extracted emission lines data
     # Load up the actual irradiance data into a pandas DataFrame
-    eve_lines = pd.read_csv('/Users/shawnpolson/Documents/School/Spring 2018/Data Mining/StealthCMEs/savesets/eve_selected_lines.csv')
-    print(eve_lines)
+    # Declare that column 0 is the index then convert it to datetime
+    eve_lines = pd.read_csv('/Users/shawnpolson/Documents/School/Spring 2018/Data Mining/StealthCMEs/savesets/eve_selected_lines.csv', index_col=0)
+    eve_lines.index = pd.to_datetime(eve_lines.index)
+    #print(eve_lines.head)
 
     if verbose:
         logger.info('Loaded EVE data')
@@ -139,23 +127,31 @@ def generate_cme_signature(threshold_time_prior_flare_minutes=240.0,
 
     # Start a progress bar
     # Note this breaks when flare_index_range doesn't span at least 2 things
-    widgets = [progressbar.Percentage(), progressbar.Bar(), progressbar.Timer(), ' ', progressbar.AdaptiveETA()]
-    progress_bar = progressbar.ProgressBar(widgets=[progressbar.FormatLabel('Flare Event Loop: ')] + widgets,
-                                           min_value=flare_index_range[0], max_value=flare_index_range[-1]).start()
+    #widgets = [progressbar.Percentage(), progressbar.Bar(), progressbar.Timer(), ' ', progressbar.AdaptiveETA()]
+    #progress_bar = progressbar.ProgressBar(widgets=[progressbar.FormatLabel('Flare Event Loop: ')] + widgets,
+    #                                       min_value=0, max_value=1).start()
 
     # Prepare a hold-over pre-flare irradiance value,
     # which will normally have one element for each of the 39 emission lines
     preflare_irradiance = np.nan
 
     # TODO: Now that we have our 6 selected lines, for the time range of our one example CME (2010/08/07 17:12-21:18), smooth them out, and run them through James's routines to produce the "signature" of the CME.
+    # Get only rows in our time range
+    startTime = pd.to_datetime(start_timestamp) # default value is '2010-08-07 17:12:10'
+    endTime = pd.to_datetime(end_timestamp)     # default value is '2010-08-07 21:18:11'
+    eve_lines_in_timeRange = eve_lines.loc[(eve_lines.index >= startTime) & (eve_lines.index <= endTime)]
+    #print(eve_lines_in_timeRange.head)
+
+    if verbose:
+        logger.info('Sliced rows in time range: ' + start_timestamp + ' -> ' + end_timestamp)
 
     # Start loop through all flares
-    for curve_time in flare_index_range:
+    #for curve_time in flare_index_range:
 
-        progress_bar.update(curve_time)
+    #    progress_bar.update(curve_time)
 
-    progress_bar.finish()
+    #progress_bar.finish()
 
 
 if __name__ == '__main__':
-    generate_cme_signature(verbose=True, flare_index_range=range(1, 3))
+    generate_cme_signature(verbose=True, start_timestamp='2010-08-07 17:12:10', end_timestamp='2010-08-07 21:18:11')
