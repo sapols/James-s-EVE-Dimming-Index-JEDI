@@ -33,7 +33,7 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:11',
                           end_timestamp='2010-08-07 21:18:11',
                           output_path='/Users/shawnpolson/Documents/School/Spring 2018/Data Mining/StealthCMEs/PyCharm/JEDI Catalog/',
                           verbose=True):
-    """Wrapper code for creating James's Extreme Ultraviolet Variability Experiment (EVE) Dimming Index (JEDI) catalog.
+    """Wrapper code for generating the dimming depth, duration, and slope for one CME event.
 
     Inputs:
         None.
@@ -54,13 +54,13 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:11',
         None
 
     Example:
-        generate_cme_signature(output_path='/Users/jmason86/Dropbox/Research/Postdoc_NASA/Analysis/Coronal Dimming Analysis/JEDI Catalog/',
-                              verbose=True)
+        generate_cme_signature(verbose=True, start_timestamp='2010-08-07 17:12:11', end_timestamp='2010-08-07 23:18:11')
+
     """
     # Prepare the logger for verbose
     if verbose:
         logger = JpmLogger(filename='generate_shawns_jedi_catalog', path=output_path, console=True)
-        logger.info("Starting JEDI processing pipeline.")
+        logger.info("Starting CME signature processing pipeline.")
     else:
         logger = None
 
@@ -135,11 +135,11 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:11',
     preflare_irradiance = np.nan
 
     # TODO: Now that we have our 6 selected lines, for the time range of our one example CME (2010/08/07 17:12-21:18), smooth them out, and run them through James's routines to produce the "signature" of the CME.
-    # Note: See this link if James's eve_lines[start:end] syntax is desired: https://stackoverflow.com/questions/16175874/python-pandas-dataframe-slicing-by-date-conditions  (Note we get KeyError if requested times in this range don't exist exactly)
+    # Note: See this link if James's "eve_lines[start:end]" syntax is desired: https://stackoverflow.com/questions/16175874/python-pandas-dataframe-slicing-by-date-conditions  (Note we get KeyError if requested times in this range don't exist exactly)
     # Get only rows in our dimming window
     startTime = pd.to_datetime(start_timestamp) # default value is '2010-08-07 17:12:11'
     endTime = pd.to_datetime(end_timestamp)     # default value is '2010-08-07 21:18:11'
-    eve_lines_event = eve_lines.loc[(eve_lines.index >= startTime) & (eve_lines.index <= endTime)] # this syntax is more forgiving than eve_lines[start:end]
+    eve_lines_event = eve_lines.loc[(eve_lines.index >= startTime) & (eve_lines.index <= endTime)] # this syntax is more forgiving than "eve_lines[startTime:endTime]"
     #print(eve_lines_event.head)
 
     if verbose:
