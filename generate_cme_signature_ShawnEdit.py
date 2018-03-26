@@ -29,7 +29,7 @@ __author__ = 'James Paul Mason (and Shawn Polson and Tyler Albee)'
 __contact__ = 'shpo9723@colorado.edu'
 
 
-def generate_cme_signature(start_timestamp='2010-08-07 17:12:10',
+def generate_cme_signature(start_timestamp='2010-08-07 17:12:11',
                           end_timestamp='2010-08-07 21:18:11',
                           output_path='/Users/shawnpolson/Documents/School/Spring 2018/Data Mining/StealthCMEs/PyCharm/JEDI Catalog/',
                           verbose=True):
@@ -69,7 +69,6 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:10',
     # Declare that column 0 is the index then convert it to datetime
     eve_lines = pd.read_csv('/Users/shawnpolson/Documents/School/Spring 2018/Data Mining/StealthCMEs/savesets/eve_selected_lines.csv', index_col=0)
     eve_lines.index = pd.to_datetime(eve_lines.index)
-    #print(eve_lines.head)
 
     if verbose:
         logger.info('Loaded EVE data')
@@ -77,8 +76,8 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:10',
     # Define the columns of the JEDI catalog
     jedi_row = pd.DataFrame([OrderedDict([
                              ('Event #', np.nan),
-                             ('GOES Flare Start Time', np.nan),
-                             ('GOES Flare Peak Time', np.nan),
+                             ('Start Time', np.nan),
+                             ('End Time', np.nan),
                              ('GOES Flare Class', np.nan),
                              ('Pre-Flare Start Time', np.nan),
                              ('Pre-Flare End Time', np.nan),
@@ -136,22 +135,41 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:10',
     preflare_irradiance = np.nan
 
     # TODO: Now that we have our 6 selected lines, for the time range of our one example CME (2010/08/07 17:12-21:18), smooth them out, and run them through James's routines to produce the "signature" of the CME.
-    # Get only rows in our time range
-    startTime = pd.to_datetime(start_timestamp) # default value is '2010-08-07 17:12:10'
+    # Note: See this link if James's eve_lines[start:end] syntax is desired: https://stackoverflow.com/questions/16175874/python-pandas-dataframe-slicing-by-date-conditions  (Note we get KeyError if requested times in this range don't exist exactly)
+    # Get only rows in our dimming window
+    startTime = pd.to_datetime(start_timestamp) # default value is '2010-08-07 17:12:11'
     endTime = pd.to_datetime(end_timestamp)     # default value is '2010-08-07 21:18:11'
-    eve_lines_in_timeRange = eve_lines.loc[(eve_lines.index >= startTime) & (eve_lines.index <= endTime)]
-    #print(eve_lines_in_timeRange.head)
+    eve_lines_event = eve_lines.loc[(eve_lines.index >= startTime) & (eve_lines.index <= endTime)] # this syntax is more forgiving than eve_lines[start:end]
+    #print(eve_lines_event.head)
 
     if verbose:
-        logger.info('Sliced rows in time range: ' + start_timestamp + ' -> ' + end_timestamp)
+        logger.info('Sliced rows in dimming window time range: ' + start_timestamp + ' -> ' + end_timestamp)
+        logger.info("Event {0} EVE data clipped to dimming window.".format(1))
 
     # Start loop through all flares
     #for curve_time in flare_index_range:
-
     #    progress_bar.update(curve_time)
+
+    # Fill the event information into the JEDI row
+    jedi_row['Event #'] = 1
+    jedi_row['Start Time'] = start_timestamp
+    jedi_row['End Time'] = end_timestamp
+    if verbose:
+        logger.info("Event {0} details stored to JEDI row.".format(1))
+
+
+    # Convert irradiance units to percent
+    # (in place, don't care about absolute units from this point forward)
+    # Note: "preflare_irradiance" is pandas series with columns for each line and just one irradiance (float) per column
+    preflare_irradiance = eve_lines_event.iloc[0]
+    eve_lines_event_percentages = (eve_lines_event - preflare_irradiance) / preflare_irradiance * 100.0
+    #print(eve_lines_event_percentages.head)
+
+    if verbose:
+        logger.info("Event {0} irradiance converted from absolute to percent units.".format(1))
 
     #progress_bar.finish()
 
 
 if __name__ == '__main__':
-    generate_cme_signature(verbose=True, start_timestamp='2010-08-07 17:12:10', end_timestamp='2010-08-07 21:18:11')
+    generate_cme_signature(verbose=True, start_timestamp='2010-08-07 17:12:11', end_timestamp='2010-08-07 23:18:11')
