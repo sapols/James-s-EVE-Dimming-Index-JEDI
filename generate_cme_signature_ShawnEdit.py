@@ -199,7 +199,7 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:11',
     progress_bar_fitting.finish()
 
     if verbose:
-        logger.info('Light curved fitted')
+        logger.info('Light curves fitted')
 
 
 
