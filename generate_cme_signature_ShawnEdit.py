@@ -164,31 +164,31 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:11',
         logger.info("Event {0} irradiance converted from absolute to percent units.".format(1))
 
     # Fit the light curves to reduce influence of noise on the parameterizations to come later
-    uncertainty = np.ones(len(eve_lines_event)) * 0.002545  # got this line from James's code
+    uncertainty = np.ones(len(eve_lines_event_percentages)) * 0.002545  # got this line from James's code
 
     progress_bar_fitting = progressbar.ProgressBar(widgets=[progressbar.FormatLabel('Light curve fitting: ')] + widgets,
-                                                   max_value=len(eve_lines_event.columns)).start()
-    for i, column in enumerate(eve_lines_event):
-        if eve_lines_event[column].isnull().all().all():
+                                                   max_value=len(eve_lines_event_percentages.columns)).start()
+    for i, column in enumerate(eve_lines_event_percentages):
+        if eve_lines_event_percentages[column].isnull().all().all():
             if verbose:
                 logger.info(
                     'Event {0} {1} fitting skipped because all irradiances are NaN.'.format(1, column))
         else:
-            eve_line_event = pd.DataFrame(eve_lines_event[column])
-            eve_line_event.columns = ['irradiance']
-            eve_line_event['uncertainty'] = uncertainty
+            eve_line_event_percentages = pd.DataFrame(eve_lines_event_percentages[column])
+            eve_line_event_percentages.columns = ['irradiance']
+            eve_line_event_percentages['uncertainty'] = uncertainty
 
             fitting_path = output_path + 'Fitting/'
             if not os.path.exists(fitting_path):
                 os.makedirs(fitting_path)
 
             plt.close('all')
-            light_curve_fit, best_fit_gamma, best_fit_score = automatic_fit_light_curve(eve_line_event,
+            light_curve_fit, best_fit_gamma, best_fit_score = automatic_fit_light_curve(eve_line_event_percentages,
                                                                                         plots_save_path='{0} Event {1} {2} '.format(
                                                                                             fitting_path, 1,
                                                                                             column),
                                                                                         verbose=verbose, logger=logger)
-            eve_lines_event[column] = light_curve_fit
+            eve_lines_event_percentages[column] = light_curve_fit
             jedi_row[column + ' Fitting Gamma'] = best_fit_gamma
             jedi_row[column + ' Fitting Score'] = best_fit_score
 
