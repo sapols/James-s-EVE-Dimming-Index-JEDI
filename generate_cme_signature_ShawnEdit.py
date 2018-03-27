@@ -126,8 +126,6 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:11',
 
     # Start a progress bar
     widgets = [progressbar.Percentage(), progressbar.Bar(), progressbar.Timer(), ' ', progressbar.AdaptiveETA()]
-    #progress_bar = progressbar.ProgressBar(widgets=[progressbar.FormatLabel('Flare Event Loop: ')] + widgets,
-    #                                       min_value=0, max_value=1).start()
 
     # Prepare a hold-over pre-flare irradiance value,
     # which will normally have one element for each of the 39 emission lines
@@ -152,13 +150,11 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:11',
     if verbose:
         logger.info("Event {0} details stored to JEDI row.".format(1))
 
-
     # Convert irradiance units to percent
     # (in place, don't care about absolute units from this point forward)
     # Note: "preflare_irradiance" is pandas series with columns for each line and just one irradiance (float) per column
     preflare_irradiance = eve_lines_event.iloc[0]
     eve_lines_event_percentages = (eve_lines_event - preflare_irradiance) / preflare_irradiance * 100.0
-    #print(eve_lines_event_percentages.head)
 
     if verbose:
         logger.info("Event {0} irradiance converted from absolute to percent units.".format(1))
@@ -200,6 +196,7 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:11',
 
     if verbose:
         logger.info('Light curves fitted')
+        #print(eve_lines_event_percentages.head)
 
 
 
