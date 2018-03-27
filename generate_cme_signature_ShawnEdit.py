@@ -4,7 +4,7 @@ import itertools
 from collections import OrderedDict
 import numpy as np
 import matplotlib as mpl
-mpl.use('macosx')
+mpl.use('TkAgg') #used to be mpl.use('macosx')
 import pandas as pd
 import matplotlib.pyplot as plt
 import astropy.units as u
@@ -125,8 +125,7 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:11',
         logger.info('Created JEDI row definition.')
 
     # Start a progress bar
-    # Note this breaks when flare_index_range doesn't span at least 2 things
-    #widgets = [progressbar.Percentage(), progressbar.Bar(), progressbar.Timer(), ' ', progressbar.AdaptiveETA()]
+    widgets = [progressbar.Percentage(), progressbar.Bar(), progressbar.Timer(), ' ', progressbar.AdaptiveETA()]
     #progress_bar = progressbar.ProgressBar(widgets=[progressbar.FormatLabel('Flare Event Loop: ')] + widgets,
     #                                       min_value=0, max_value=1).start()
 
@@ -146,10 +145,6 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:11',
         logger.info('Sliced rows in dimming window time range: ' + start_timestamp + ' -> ' + end_timestamp)
         logger.info("Event {0} EVE data clipped to dimming window.".format(1))
 
-    # Start loop through all flares
-    #for curve_time in flare_index_range:
-    #    progress_bar.update(curve_time)
-
     # Fill the event information into the JEDI row
     jedi_row['Event #'] = 1
     jedi_row['Start Time'] = start_timestamp
@@ -168,7 +163,44 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:11',
     if verbose:
         logger.info("Event {0} irradiance converted from absolute to percent units.".format(1))
 
-    #progress_bar.finish()
+    # Fit the light curves to reduce influence of noise on the parameterizations to come later
+    uncertainty = np.ones(len(eve_lines_event)) * 0.002545  # got this line from James's code
+
+    progress_bar_fitting = progressbar.ProgressBar(widgets=[progressbar.FormatLabel('Light curve fitting: ')] + widgets,
+                                                   max_value=len(eve_lines_event.columns)).start()
+    for i, column in enumerate(eve_lines_event):
+        if eve_lines_event[column].isnull().all().all():
+            if verbose:
+                logger.info(
+                    'Event {0} {1} fitting skipped because all irradiances are NaN.'.format(1, column))
+        else:
+            eve_line_event = pd.DataFrame(eve_lines_event[column])
+            eve_line_event.columns = ['irradiance']
+            eve_line_event['uncertainty'] = uncertainty
+
+            fitting_path = output_path + 'Fitting/'
+            if not os.path.exists(fitting_path):
+                os.makedirs(fitting_path)
+
+            plt.close('all')
+            light_curve_fit, best_fit_gamma, best_fit_score = automatic_fit_light_curve(eve_line_event,
+                                                                                        plots_save_path='{0} Event {1} {2} '.format(
+                                                                                            fitting_path, 1,
+                                                                                            column),
+                                                                                        verbose=verbose, logger=logger)
+            eve_lines_event[column] = light_curve_fit
+            jedi_row[column + ' Fitting Gamma'] = best_fit_gamma
+            jedi_row[column + ' Fitting Score'] = best_fit_score
+
+            if verbose:
+                logger.info('Event {0} {1} light curves fitted.'.format(1, column))
+            progress_bar_fitting.update(i)
+
+    progress_bar_fitting.finish()
+
+    if verbose:
+        logger.info('Light curved fitted')
+
 
 
 if __name__ == '__main__':
