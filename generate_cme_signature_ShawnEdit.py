@@ -65,7 +65,7 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:11',
     else:
         logger = None
 
-#---------Load original dataset-----------------------------------------------------------------------------------------
+#---------Load dataset of selected lines--------------------------------------------------------------------------------
 
     # Get EVE level 2 extracted emission lines data
     # Load up the actual irradiance data into a pandas DataFrame
@@ -134,14 +134,13 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:11',
     # which will normally have one element for each of the 39 emission lines
     preflare_irradiance = np.nan
 
-# ---------Clip dataset to CME event window-----------------------------------------------------------------------------
+#----------Clip dataset to CME event window-----------------------------------------------------------------------------
 
-    # TODO: Now that we have our 6 selected lines, for the time range of our one example CME (2010/08/07 17:12-21:18), smooth them out, and run them through James's routines to produce the "signature" of the CME.
-    # Note: See this link if James's "eve_lines[start:end]" syntax is desired: https://stackoverflow.com/questions/16175874/python-pandas-dataframe-slicing-by-date-conditions  (Note we get KeyError if requested times in this range don't exist exactly)
     # Get only rows in our dimming window
-    startTime = pd.to_datetime(start_timestamp) # default value is '2010-08-07 17:12:11'
-    endTime = pd.to_datetime(end_timestamp)     # default value is '2010-08-07 21:18:11'
-    eve_lines_event = eve_lines.loc[(eve_lines.index >= startTime) & (eve_lines.index <= endTime)] # this syntax is more forgiving than "eve_lines[startTime:endTime]"
+    # Note: See this link if James's "eve_lines[start:end]" syntax is desired: https://stackoverflow.com/questions/16175874/python-pandas-dataframe-slicing-by-date-conditions  (Note we get KeyError if requested times in this range don't exist exactly)
+    startTime = pd.to_datetime(start_timestamp)  # default value is '2010-08-07 17:12:11'
+    endTime = pd.to_datetime(end_timestamp)      # default value is '2010-08-07 21:18:11'
+    eve_lines_event = eve_lines.loc[(eve_lines.index >= startTime) & (eve_lines.index <= endTime)]  # this syntax is more forgiving than "eve_lines[startTime:endTime]"
     #print(eve_lines_event.head)
 
     if verbose:
@@ -205,7 +204,6 @@ def generate_cme_signature(start_timestamp='2010-08-07 17:12:11',
 
     if verbose:
         logger.info('Light curves fitted')
-        #print(eve_lines_event_percentages.head)
 
 #---------Determine dimming characteristics-----------------------------------------------------------------------------
 
